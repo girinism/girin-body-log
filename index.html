@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIRIN BODY LOG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>GIRIN BODY LOG</h1>
+    <p class="subtitle">AI 빅웨이브를 넘기 위한 신체+정신 컨디션 트래커</p>
+    <div class="member-selector">
+      <button class="member-btn active" data-member="girin">기린 (박승현)</button>
+      <button class="member-btn" data-member="minho">김민호</button>
+      <button class="member-btn" data-member="seunghun">이승훈</button>
+    </div>
+  </header>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="record">오늘 기록</button>
+    <button class="tab-btn" data-tab="dashboard">대시보드</button>
+    <button class="tab-btn" data-tab="routine">운동 루틴</button>
+    <button class="tab-btn" data-tab="guild">길드 현황</button>
+  </nav>
+
+  <main>
+    <!-- 오늘 기록 탭 -->
+    <section id="tab-record" class="tab-content active">
+      <h2>오늘의 기록 <span id="today-date"></span></h2>
+
+      <div class="card">
+        <h3>신체 수치</h3>
+        <div class="input-grid">
+          <div class="input-group">
+            <label for="weight">체중 (kg)</label>
+            <input type="number" id="weight" step="0.1" placeholder="75.0">
+          </div>
+          <div class="input-group">
+            <label for="body-fat">체지방률 (%)</label>
+            <input type="number" id="body-fat" step="0.1" placeholder="20.0">
+          </div>
+          <div class="input-group">
+            <label for="sleep-hours">수면 시간</label>
+            <input type="number" id="sleep-hours" step="0.5" min="0" max="24" placeholder="7.5">
+          </div>
+          <div class="input-group">
+            <label for="condition">컨디션 (1~10)</label>
+            <input type="range" id="condition" min="1" max="10" value="5">
+            <span id="condition-value" class="range-value">5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>운동 체크</h3>
+        <div class="routine-check">
+          <label class="check-item">
+            <input type="checkbox" id="morning-done">
+            <span class="check-label">아침 루틴 (10분)</span>
+            <span class="check-detail">스트레칭 → 스쿼트 → 팔굽혀펴기 → 플랭크</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="break-done">
+            <span class="check-label">포모도로 브레이크</span>
+            <span class="check-detail">목/어깨 → 스쿼트 → 손목 → 눈 운동</span>
+          </label>
+          <div class="break-count-row" id="break-count-row" style="display:none;">
+            <label>브레이크 횟수</label>
+            <input type="number" id="break-count" min="1" max="20" value="1">
+          </div>
+          <label class="check-item">
+            <input type="checkbox" id="evening-done">
+            <span class="check-label">저녁 루틴 (20분)</span>
+            <span class="check-detail">유산소 → 버피 → 마운틴클라이머 → 브릿지 → 스트레칭</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>추가 운동 (선택)</h3>
+        <div id="extra-exercises">
+          <div class="extra-row">
+            <input type="text" placeholder="운동 이름 (예: 산책)" class="extra-name">
+            <input type="number" placeholder="시간(분)" class="extra-duration">
+          </div>
+        </div>
+        <button class="btn-secondary" id="add-exercise-btn">+ 운동 추가</button>
+      </div>
+
+      <div class="card">
+        <h3>오늘 한마디</h3>
+        <textarea id="daily-note" placeholder="오늘 컨디션, 느낀 점, 메모 등..."></textarea>
+      </div>
+
+      <button class="btn-primary" id="save-btn">저장하기</button>
+      <div id="save-message" class="save-message"></div>
+    </section>
+
+    <!-- 대시보드 탭 -->
+    <section id="tab-dashboard" class="tab-content">
+      <h2>내 대시보드</h2>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-number" id="streak-count">0</div>
+          <div class="stat-label">연속 기록 (일)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="total-days">0</div>
+          <div class="stat-label">총 기록 일수</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="avg-condition">-</div>
+          <div class="stat-label">평균 컨디션</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="avg-sleep">-</div>
+          <div class="stat-label">평균 수면 (h)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>체중 추이</h3>
+        <div class="chart-container">
+          <canvas id="weight-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>컨디션 + 수면 추이</h3>
+        <div class="chart-container">
+          <canvas id="condition-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>운동 달성률 (최근 7일)</h3>
+        <div class="chart-container">
+          <canvas id="routine-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>최근 기록</h3>
+        <div id="recent-records"></div>
+      </div>
+    </section>
+
+    <!-- 운동 루틴 탭 -->
+    <section id="tab-routine" class="tab-content">
+      <h2>운동 루틴 가이드</h2>
+
+      <div class="card">
+        <h3>현재 주차: <span id="current-week">1~2주 적응기</span></h3>
+        <div class="week-progress">
+          <div class="week-bar" id="week-bar" style="width: 12.5%"></div>
+        </div>
+        <p class="week-info" id="week-info">기본 횟수 유지. 습관 만들기에 집중하세요.</p>
+      </div>
+
+      <div class="card">
+        <h3>아침 기상 루틴 (10분) — 작업 시작 전</h3>
+        <table class="routine-table">
+          <tr><th>순서</th><th>운동</th><th>횟수</th><th>효과</th></tr>
+          <tr><td>1</td><td>스트레칭 (전신)</td><td>3분</td><td>혈액순환, 몸 깨우기</td></tr>
+          <tr><td>2</td><td>스쿼트</td><td>15회 × 2세트</td><td>하체 강화, 각성</td></tr>
+          <tr><td>3</td><td>팔굽혀펴기</td><td>10회 × 2세트</td><td>상체 근력</td></tr>
+          <tr><td>4</td><td>플랭크</td><td>30초 × 2세트</td><td>코어 안정성</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>포모도로 브레이크 (5분) — 작업 중간 휴식</h3>
+        <table class="routine-table">
+          <tr><th>운동</th><th>시간</th><th>비고</th></tr>
+          <tr><td>목/어깨 스트레칭</td><td>1분</td><td>거북목 예방</td></tr>
+          <tr><td>의자 스쿼트 또는 런지</td><td>10회</td><td>하체 혈류</td></tr>
+          <tr><td>손목 스트레칭</td><td>1분</td><td>타이핑 피로 회복</td></tr>
+          <tr><td>눈 운동 (20-20-20)</td><td>1분</td><td>20초간 20피트 밖 응시</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>저녁 루틴 (20분) — 작업 종료 후</h3>
+        <table class="routine-table">
+          <tr><th>순서</th><th>운동</th><th>횟수</th><th>효과</th></tr>
+          <tr><td>1</td><td>가벼운 유산소</td><td>5분</td><td>심폐 기능</td></tr>
+          <tr><td>2</td><td>버피</td><td>8회 × 3세트</td><td>전신 운동</td></tr>
+          <tr><td>3</td><td>마운틴 클라이머</td><td>15회 × 2세트</td><td>코어 + 심폐</td></tr>
+          <tr><td>4</td><td>브릿지</td><td>15회 × 2세트</td><td>허리 건강</td></tr>
+          <tr><td>5</td><td>폼롤러/스트레칭</td><td>5분</td><td>근육 이완</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>8주 단계별 강도</h3>
+        <table class="routine-table">
+          <tr><th>주차</th><th>단계</th><th>조절</th></tr>
+          <tr><td>1~2주</td><td>적응기</td><td>기본 횟수 유지. 습관 만들기</td></tr>
+          <tr><td>3~4주</td><td>성장기</td><td>횟수 +5, 플랭크 +15초</td></tr>
+          <tr><td>5~6주</td><td>강화기</td><td>세트 +1, 유산소 10분</td></tr>
+          <tr><td>7~8주</td><td>완성기</td><td>아침 15분 / 저녁 30분</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>주간 특별 루틴 (선택)</h3>
+        <table class="routine-table">
+          <tr><th>요일</th><th>추천</th><th>시간</th></tr>
+          <tr><td>수요일</td><td>산책 또는 조깅</td><td>30분</td></tr>
+          <tr><td>토요일</td><td>등산 또는 자전거</td><td>1시간</td></tr>
+          <tr><td>일요일</td><td>완전 휴식 또는 가벼운 요가</td><td>-</td></tr>
+        </table>
+      </div>
+
+      <div class="card reminder">
+        <h3>주의사항</h3>
+        <ul>
+          <li>통증이 있으면 즉시 중단</li>
+          <li>수분 섭취: 1시간에 물 한 잔</li>
+          <li>수면: 최소 7시간 확보</li>
+          <li>카페인은 오후 2시 이후 자제</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 길드 현황 탭 -->
+    <section id="tab-guild" class="tab-content">
+      <h2>길드 현황</h2>
+
+      <div class="guild-grid" id="guild-grid">
+        <!-- JS로 렌더링 -->
+      </div>
+
+      <div class="card">
+        <h3>이번 주 랭킹</h3>
+        <div id="guild-ranking"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>GIRIN BODY LOG — 폐관수련 2026</p>
+    <p class="footer-quote">"신체가 건강해야 정신이 버티고, 정신이 버텨야 BIG WAVE를 탄다."</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
